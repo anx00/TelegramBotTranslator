@@ -1,3 +1,4 @@
+import backup_google_translate
 import requests
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 
@@ -15,6 +16,7 @@ DEEPL_API_URL = "https://api-free.deepl.com/v2/translate"
 
 # Function to translate a message using the DeepL API
 def translate_message(message, language_pair):
+
     data = {
         "auth_key": DEEPL_API_KEY,
         "text": message,
@@ -27,26 +29,33 @@ def translate_message(message, language_pair):
     print(response_json)
     return response_json["translations"][0]["text"]
 
-
 # Function to handle incoming messages
 def handle_message(update, context):
-
     chat = update.message.chat
     print(chat)
 
     if context.user_data.get("translating", False):
-		message = update.message.text
-		translated_message = translate_message(message, LANGUAGE_PAIR)
-		translated_message_en = translate_message(message, 'en')
-		if LANGUAGE_PAIR == 'tr':
-			context.bot.send_message(chat_id=update.message.chat_id,
-									 text='🇹🇷' + ": " + translated_message + "\n🇬🇧: " + translated_message_en)
-		elif LANGUAGE_PAIR == 'es':
-			context.bot.send_message(chat_id=update.message.chat_id,
-									 text='🇪🇸' + ": " + translated_message + "\n🇬🇧: " + translated_message_en)
-		else:
-			context.bot.send_message(chat_id=update.message.chat_id,
-									 text=LANGUAGE_PAIR + ": " + translated_message + "\n🇬🇧: " + translated_message_en)
+        if ((chat.type == "" and chat.title == "") or
+                (chat.type == "" and chat.first_name == "")):
+            message = update.message.text
+            try:
+                print("DeepL")
+                translated_message = translate_message(message, LANGUAGE_PAIR)
+                translated_message_en = translate_message(message, 'en')
+            except:
+                print("Google Translate")
+                translated_message = backup_google_translate.translate_message_backup(message, LANGUAGE_PAIR)
+                translated_message_en = backup_google_translate.translate_message_backup(message, 'en')
+
+            if LANGUAGE_PAIR == 'tr':
+                context.bot.send_message(chat_id=update.message.chat_id,
+                                         text='🇹🇷' + ": " + translated_message + "\n🇬🇧: " + translated_message_en)
+            elif LANGUAGE_PAIR == 'es':
+                context.bot.send_message(chat_id=update.message.chat_id,
+                                         text='🇪🇸' + ": " + translated_message + "\n🇬🇧: " + translated_message_en)
+            else:
+                context.bot.send_message(chat_id=update.message.chat_id,
+                                         text=LANGUAGE_PAIR + ": " + translated_message + "\n🇬🇧: " + translated_message_en)
 
 
 def start_translation(update, context):
@@ -71,6 +80,7 @@ def handle_changelang(update, context):
     # Send a confirmation message to the user
     context.bot.send_message(chat_id=update.message.chat_id, text="Language pair updated to: " + LANGUAGE_PAIR)
 
+
 # Create the Updater and pass it your API key.
 updater = Updater(TELEGRAM_API_KEY, use_context=True)
 
@@ -82,12 +92,11 @@ dp.add_handler(CommandHandler("start", start_translation))
 
 # Add a handler to handle the /stop command
 dp.add_handler(CommandHandler("stop", stop_translation))
-
 # Add a handler to handle the /changelang command
 dp.add_handler(CommandHandler("changelang", handle_changelang))
 
 # Add a handler to handle messages
-dp.add_handler(MessageHandler(Filters.text,handle_message))
+dp.add_handler(MessageHandler(Filters.text, handle_message))
 
 # Start the Bot
 updater.start_polling()
