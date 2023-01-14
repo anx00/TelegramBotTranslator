@@ -1,4 +1,4 @@
-# Translator Telegram Bot DeepL
+# Telegram Bot Translator
 
 This bot was created with the purpose of introducing it in a telegram group between people who speak different language so that each of the messages sent is automatically translated into a desired language and English simultaneously. By default, the **detected language is Spanish** and the **translated language is Turkish** (in addition to English). 
 
