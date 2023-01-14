@@ -28,3 +28,13 @@ In addition, as indicated before, the **detected language** by default is Spanis
 ```
 
 Or if you prefer to let DeepL detect the source language, delete the parameter.
+
+Finally, you will need to change this code:
+
+```python
+if ((chat.type == "" and chat.title == "") or
+                (chat.type == "" and chat.first_name == "")):
+```
+
+This was coded so you can specify the group in which the bot will be used as we don't want it to be public so everyone uses our DeepL API calls.
+>chat.type = private/group/supergroup... and chat.first_name corresponds to your name in case you want to use the bot in private.
